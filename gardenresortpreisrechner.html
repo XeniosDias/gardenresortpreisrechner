@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Garden Resort Preisrechner</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      color: #333;
+      line-height: 1.6;
+    }
+    
+    .container {
+      max-width: 1000px;
+      margin: 2rem auto;
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 2rem;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 2rem;
+      font-size: 2.5rem;
+      font-weight: 300;
+      letter-spacing: -1px;
+      position: relative;
+    }
+    
+    h1::after {
+      content: '';
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 60px;
+      height: 3px;
+      background: linear-gradient(45deg, #667eea, #764ba2);
+      border-radius: 2px;
+    }
+    
+    .controls {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+      background: rgba(255, 255, 255, 0.7);
+      padding: 1.5rem;
+      border-radius: 15px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.05);
+    }
+    
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+    
+    .controls label { 
+      font-weight: 600;
+      color: #2c3e50;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .controls select,
+    .controls input {
+      padding: 0.8rem;
+      font-size: 1rem;
+      border: 2px solid transparent;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.9);
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    }
+    
+    .controls select:focus,
+    .controls input:focus {
+      outline: none;
+      border-color: #667eea;
+      box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      transform: translateY(-2px);
+    }
+    
+    .controls button {
+      padding: 0.8rem 2rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 12px;
+      background: linear-gradient(45deg, #667eea, #764ba2);
+      color: white;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 1.5rem;
+    }
+    
+    .controls button:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+    }
+    
+    .controls button:active {
+      transform: translateY(-1px);
+    }
+    
+    .calendar-nav {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 2rem;
+      margin-bottom: 1.5rem;
+      background: rgba(255, 255, 255, 0.8);
+      padding: 1rem;
+      border-radius: 15px;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.05);
+    }
+    
+    .calendar-nav button {
+      width: 50px;
+      height: 50px;
+      border: none;
+      border-radius: 50%;
+      background: linear-gradient(45deg, #667eea, #764ba2);
+      color: white;
+      font-size: 1.5rem;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    
+    .calendar-nav button:hover:not(:disabled) {
+      transform: scale(1.1);
+      box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
+    }
+    
+    .calendar-nav button:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      box-shadow: none;
+    }
+    
+    #month-label {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #2c3e50;
+      min-width: 200px;
+      text-align: center;
+    }
+    
+    .weekdays {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      background: linear-gradient(45deg, #667eea, #764ba2);
+      text-align: center;
+      font-weight: 600;
+      padding: 1rem 0;
+      border-radius: 15px 15px 0 0;
+      color: white;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    #calendar {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 2px;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 0 0 15px 15px;
+      overflow: hidden;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    }
+    
+    .day {
+      background: #fff;
+      padding: 1rem 0.5rem;
+      text-align: center;
+      cursor: pointer;
+      position: relative;
+      min-height: 80px;
+      transition: all 0.3s ease;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      border: 2px solid transparent;
+    }
+    
+    .day:hover:not(.out-of-season) {
+      background: rgba(102, 126, 234, 0.1);
+      transform: scale(1.05);
+      border-color: rgba(102, 126, 234, 0.3);
+    }
+    
+    .day.out-of-season {
+      background: #f8f9fa;
+      color: #adb5bd;
+      cursor: default;
+      opacity: 0.6;
+    }
+    
+    .day.range-start,
+    .day.range-end {
+      background: linear-gradient(45deg, #667eea, #764ba2);
+      color: white;
+      font-weight: 600;
+      transform: scale(1.05);
+      border-color: rgba(102, 126, 234, 0.5);
+    }
+    
+    .day.range-between {
+      background: rgba(102, 126, 234, 0.2);
+      color: #2c3e50;
+      font-weight: 500;
+    }
+    
+    .day div:first-child {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-bottom: 0.25rem;
+    }
+    
+    .price {
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: #28a745;
+      background: rgba(40, 167, 69, 0.1);
+      padding: 0.2rem 0.5rem;
+      border-radius: 8px;
+      margin-top: 0.25rem;
+    }
+    
+    .range-start .price,
+    .range-end .price {
+      background: rgba(255, 255, 255, 0.2);
+      color: rgba(255, 255, 255, 0.9);
+    }
+    
+    .summary {
+      margin-top: 2rem;
+      font-size: 1.2rem;
+      font-weight: 600;
+      text-align: center;
+      background: linear-gradient(45deg, #28a745, #20c997);
+      color: white;
+      padding: 1.5rem;
+      border-radius: 15px;
+      box-shadow: 0 8px 32px rgba(40, 167, 69, 0.3);
+      line-height: 1.8;
+    }
+    
+    .summary:empty {
+      display: none;
+    }
+    
+    @media (max-width: 768px) {
+      .container {
+        margin: 1rem;
+        padding: 1.5rem;
+      }
+      
+      .controls {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+      }
+      
+      h1 {
+        font-size: 2rem;
+      }
+      
+      .day {
+        min-height: 60px;
+        padding: 0.5rem 0.25rem;
+      }
+      
+      .calendar-nav {
+        gap: 1rem;
+      }
+      
+      #month-label {
+        font-size: 1.2rem;
+        min-width: 150px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Garden Resort Preisrechner 2025</h1>
+    <div class="controls">
+      <div class="form-group">
+        <label for="house">House:</label>
+        <select id="house"></select>
+      </div>
+      <div class="form-group">
+        <label for="unit">Einheit:</label>
+        <select id="unit"></select>
+      </div>
+      <div class="form-group">
+        <label for="checkin">Check-in:</label>
+        <input type="text" id="checkin" readonly />
+      </div>
+      <div class="form-group">
+        <label for="checkout">Check-out:</label>
+        <input type="text" id="checkout" readonly />
+      </div>
+      <div class="form-group">
+        <button id="calculate">Berechnen</button>
+      </div>
+    </div>
+
+    <div class="calendar-nav">
+      <button id="prev-month">◀</button>
+      <span id="month-label"></span>
+      <button id="next-month">▶</button>
+    </div>
+    <div class="weekdays">
+      <div>Mo</div><div>Di</div><div>Mi</div><div>Do</div>
+      <div>Fr</div><div>Sa</div><div>So</div>
+    </div>
+    <div id="calendar"></div>
+    <div class="summary" id="summary"></div>
+  </div>
+
+  <script>
+    const PRICE_PERIODS = [
+        ["2025-04-01","2025-05-30"],
+        ["2025-05-31","2025-06-13"],
+        ["2025-06-14","2025-06-27"],
+        ["2025-06-28","2025-07-11"],
+        ["2025-07-12","2025-08-15"],
+        ["2025-08-16","2025-08-22"],
+        ["2025-08-23","2025-09-05"],
+        ["2025-09-06","2025-09-12"],
+        ["2025-09-13","2025-10-31"],
+      ];
+      
+      const PRICE_UNITS = {
+        "RUŽMARIN": [
+          { label: "2 Pers – Studio (B)",    prices: [40,45,50,65,85,65,50,45,40] },
+          { label: "3 Pers – Studio (A)",    prices: [48,55,60,75,95,75,60,55,48] },
+          { label: "5 Pers – 2 bedrooms (1,2,3)", prices: [65,70,80,100,140,100,80,70,65] },
+        ],
+        "LAVANDA": [
+          { label: "2 Pers – Room (106)",      prices: [40,45,50,60,75,60,50,45,40] },
+          { label: "2 Pers – 1 bedroom (103)", prices: [48,55,65,80,75,80,65,55,48] },
+          { label: "3 Pers – Studio (107)",    prices: [55,65,75,95,120,95,75,65,55] },
+          { label: "4 Pers – 1 bedroom (101,104)", prices:[65,70,80,110,150,110,80,70,65] },
+          { label: "4 Pers – Penthouse (108)",   prices:[70,80,85,120,165,120,85,80,70] },
+          { label: "6 Pers – 2 bedrooms (102,105)",prices:[80,85,105,155,195,155,105,85,80] },
+        ],
+        "MASLINA": [
+          { label: "2 Pers – Studio (17,18,21)", prices:[48,55,65,80,105,80,65,55,48] },
+          { label: "3 Pers – Studio (19,20,22)", prices:[55,65,75,95,120,95,75,65,55] },
+          { label: "3 Pers – 1 bedroom (7,23)",  prices:[60,70,80,105,135,105,80,70,60] },
+          { label: "4 Pers – 1 bedroom (1,2,4,5,8)", prices:[65,75,85,120,165,120,85,75,65] },
+          { label: "4 Pers – 2 bedrooms (3,6,11,16)",prices:[70,85,115,140,175,140,115,85,70] },
+          { label: "5 Pers – 1 bedroom (14,15)", prices:[75,85,115,140,175,140,115,85,75] },
+          { label: "5 Pers – 2 bedrooms (10)",   prices:[80,85,130,155,185,155,130,90,85] },
+          { label: "6 Pers – 1 bedroom (13)",    prices:[80,85,105,155,200,155,105,85,80] },
+          { label: "5 Pers – 2 bedrooms (9,12)", prices:[80,85,105,155,200,155,105,85,80] },
+        ],
+      };
+  </script>
+
+  <script>
+    // Skript initialisieren, wenn DOM bereit ist
+    document.addEventListener('DOMContentLoaded', () => {
+        // Hilfsfunktionen
+        function parseYMD(s) { return new Date(s + 'T00:00:00'); }
+        function dateToDMY(d) {
+          const dd = String(d.getDate()).padStart(2, '0');
+          const mm = String(d.getMonth() + 1).padStart(2, '0');
+          const yyyy = d.getFullYear();
+          return `${dd}/${mm}/${yyyy}`;
+        }
+        const monthNames = ["Januar","Februar","März","April","Mai","Juni","Juli","August","September","Oktober","November","Dezember"];
+      
+        // UI-Elemente
+        const houseSel    = document.getElementById('house');
+        const unitSel     = document.getElementById('unit');
+        const ciInput     = document.getElementById('checkin');
+        const coInput     = document.getElementById('checkout');
+        const calEl       = document.getElementById('calendar');
+        const sumEl       = document.getElementById('summary');
+        const prevBtn     = document.getElementById('prev-month');
+        const nextBtn     = document.getElementById('next-month');
+        const monthLabel  = document.getElementById('month-label');
+      
+        // Saison-Grenzen definieren
+        const seasonStart = parseYMD(PRICE_PERIODS[0][0]);
+        const seasonEnd   = parseYMD(PRICE_PERIODS[PRICE_PERIODS.length-1][1]);
+      
+        // Aktuelle Ansicht (Year, Month)
+        let viewYear  = seasonStart.getFullYear();
+        let viewMonth = seasonStart.getMonth();
+      
+        // Auswahlzustand
+        let state = { house:null, unit:null, checkin:null, checkout:null };
+      
+        // Auswahl zurücksetzen
+        function clearSelection() {
+          state.checkin = null; state.checkout = null;
+          ciInput.value = ''; coInput.value = '';
+        }
+      
+        // Houses laden
+        Object.keys(PRICE_UNITS).forEach(h => houseSel.add(new Option(h, h)));
+        houseSel.addEventListener('change', () => {
+          state.house = houseSel.value;
+          unitSel.innerHTML = '';
+          PRICE_UNITS[state.house].forEach(u => unitSel.add(new Option(u.label, u.label)));
+          unitSel.dispatchEvent(new Event('change'));
+        });
+      
+        // Units laden
+        unitSel.addEventListener('change', () => {
+          state.unit = unitSel.value; clearSelection(); renderCal();
+        });
+      
+        // Monatsnavigation
+        prevBtn.addEventListener('click', () => updateMonth(-1));
+        nextBtn.addEventListener('click', () => updateMonth(1));
+        function updateMonth(dir) {
+          let m = viewMonth + dir, y = viewYear;
+          if (m < 0) { m = 11; y--; } else if (m > 11) { m = 0; y++; }
+          const firstOfMonth = new Date(y, m, 1);
+          const lastOfMonth  = new Date(y, m+1, 0);
+          if (lastOfMonth < seasonStart || firstOfMonth > seasonEnd) return;
+          viewYear = y; viewMonth = m; renderCal();
+        }
+        function updateNavButtons() {
+          prevBtn.disabled = new Date(viewYear, viewMonth-1, 1) < new Date(seasonStart.getFullYear(), seasonStart.getMonth(), 1);
+          nextBtn.disabled = new Date(viewYear, viewMonth+1, 1) > new Date(seasonEnd.getFullYear(), seasonEnd.getMonth(), 1);
+        }
+      
+        // Navigationsanzeige
+        function renderNav() {
+          monthLabel.textContent = `${monthNames[viewMonth]} ${viewYear}`;
+          updateNavButtons();
+        }
+      
+        // Kalender rendern
+        function renderCal() {
+          calEl.innerHTML = ''; renderNav();
+          const offset = (new Date(viewYear, viewMonth, 1).getDay() + 6) % 7;
+          const daysInMonth = new Date(viewYear, viewMonth+1, 0).getDate();
+          for (let i=0; i<offset; i++) calEl.appendChild(createEmpty());
+          for (let d=1; d<=daysInMonth; d++) calEl.appendChild(createDay(new Date(viewYear, viewMonth, d)));
+        }
+      
+        function createEmpty() {
+          const e = document.createElement('div'); e.className = 'day out-of-season'; return e;
+        }
+        function createDay(date) {
+          const dayNum = date.getDate(); const price = getPrice(date);
+          const cell = document.createElement('div'); cell.className = 'day';
+          cell.innerHTML = `<div>${dayNum}</div><div class='price'>${price==='-'?'-':price+'€'}</div>`;
+          if (price!=='-') cell.addEventListener('click', () => onClick(date)); else cell.classList.add('out-of-season');
+          if (state.checkin && sameDay(date,state.checkin)) cell.classList.add('range-start');
+          if (state.checkout && sameDay(date,state.checkout)) cell.classList.add('range-end');
+          if (state.checkin && state.checkout && date>state.checkin && date<state.checkout) cell.classList.add('range-between');
+          return cell;
+        }
+      
+        function sameDay(a,b){return a.getFullYear()===b.getFullYear()&&a.getMonth()===b.getMonth()&&a.getDate()===b.getDate();}
+      
+        function getPrice(date) {
+          if (!state.house||!state.unit) return '-';
+          const unit = PRICE_UNITS[state.house].find(u=>u.label===state.unit);
+          if (!unit) return '-';
+          for (let i=0;i<PRICE_PERIODS.length;i++){
+            const [s,e] = PRICE_PERIODS[i].map(parseYMD);
+            if (date>=s && date<=e) return unit.prices[i];
+          }
+          return '-';
+        }
+      
+        function onClick(date) {
+          if (!state.checkin || (state.checkin&&state.checkout)) {state.checkin=date; state.checkout=null;} 
+          else if (date>=state.checkin) { state.checkout=date; } 
+          else { state.checkin=date; state.checkout=null; }
+          ciInput.value = dateToDMY(state.checkin);
+          coInput.value = state.checkout?dateToDMY(state.checkout):'';
+          renderCal();
+        }
+      
+        document.getElementById('calculate').addEventListener('click',()=>{
+          if(!state.checkin||!state.checkout) return;
+          let total=0; let cur=new Date(state.checkin);
+          const nights=(state.checkout-state.checkin)/864e5+1;
+          for(let i=0;i<nights;i++){total+=Number(getPrice(cur));cur.setDate(cur.getDate()+1);}  
+          const match=state.unit.match(/^(\d+)/);
+          const persons=match?parseInt(match[1],10):1;
+          const perPerson=(total/persons).toFixed(2);
+          sumEl.textContent=`${state.house} | ${state.unit} | Tage ${nights} | Gesamt ${total} € | p.P. ${perPerson} €`;
+        });
+      
+        houseSel.dispatchEvent(new Event('change')); renderCal();
+    });
+  </script>
+</body>
+</html>
